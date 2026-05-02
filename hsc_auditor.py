@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-import io
 import fitz  # pymupdf
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -13,81 +12,55 @@ st.set_page_config(
 
 # ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
-    <style>
-        /* Header banner */
-        .header-banner {
-            background: linear-gradient(135deg, #00A86B, #006B44);
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .header-banner h1 {
-            color: white;
-            font-size: 2.2rem;
-            margin: 0;
-        }
-        .header-banner p {
-            color: #d0f0e0;
-            font-size: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Cards */
-        .info-card {
-            background-color: #1E2130;
-            border-left: 4px solid #00A86B;
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Result box */
-        .result-box {
-            background-color: #1E2130;
-            border: 1px solid #00A86B;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        /* Sidebar styling */
-        section[data-testid="stSidebar"] {
-            background-color: #1E2130;
-        }
-
-        /* Button */
-        div.stButton > button {
-            background-color: #00A86B;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.6rem 2rem;
-            font-size: 1rem;
-            font-weight: bold;
-            width: 100%;
-        }
-        div.stButton > button:hover {
-            background-color: #006B44;
-            color: white;
-        }
-
-        /* Hide default streamlit footer */
-        footer {visibility: hidden;}
-    </style>
+<style>
+.header-banner {
+    background: linear-gradient(135deg, #00A86B, #006B44);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.header-banner h1 { color: white; font-size: 2.2rem; margin: 0; }
+.header-banner p { color: #d0f0e0; font-size: 1rem; margin-top: 0.5rem; }
+.info-card {
+    background-color: #1E2130;
+    border-left: 4px solid #00A86B;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+}
+.result-box {
+    background-color: #1E2130;
+    border: 1px solid #00A86B;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+div.stButton > button {
+    background-color: #00A86B;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    width: 100%;
+}
+div.stButton > button:hover { background-color: #006B44; color: white; }
+footer { visibility: hidden; }
+</style>
 """, unsafe_allow_html=True)
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
-    <div class="header-banner">
-        <h1>🦺 Smart HSC Audit Automator</h1>
-        <p>AI-powered site inspection analysis based on ISO 45001 & Fire Safety Codes</p>
-    </div>
+<div class="header-banner">
+    <h1>🦺 Smart HSC Audit Automator</h1>
+    <p>AI-powered site inspection analysis based on ISO 45001 & Fire Safety Codes</p>
+</div>
 """, unsafe_allow_html=True)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/safety-helmet.png", width=80)
     st.title("⚙️ Settings")
     st.markdown("---")
 
@@ -101,26 +74,26 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 📌 How to use")
     st.markdown("""
-    1. Enter your Gemini API key
-    2. Choose your file type
-    3. Upload your report
-    4. Click **Analyse Report**
-    5. Download your summary
+1. Enter your Gemini API key
+2. Choose your file type
+3. Upload your report
+4. Click **Analyse Report**
+5. Download your summary
     """)
 
     st.markdown("---")
     st.markdown("### 🔍 What it checks")
     st.markdown("""
-    - ✅ ISO 45001 compliance
-    - ✅ Fire safety codes
-    - ✅ Severity classification
-    - ✅ Corrective actions
+- ✅ ISO 45001 compliance
+- ✅ Fire safety codes
+- ✅ Severity classification
+- ✅ Corrective actions
     """)
 
     st.markdown("---")
     st.caption("Built with Streamlit & Gemini AI")
 
-# ── Main content ──────────────────────────────────────────────────────────────
+# ── Main layout ───────────────────────────────────────────────────────────────
 col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
@@ -134,40 +107,30 @@ with col1:
 
     uploaded_file = st.file_uploader(
         "Drop your file here",
-        type=["txt", "pdf"] if upload_type == "Text / PDF File" else ["png", "jpg", "jpeg"],
-        help="Supported: .txt, .pdf for text | .png, .jpg for images"
+        type=["txt", "pdf"] if upload_type == "Text / PDF File" else ["png", "jpg", "jpeg"]
     )
 
     if uploaded_file:
-        st.markdown(f"""
-            <div class="info-card">
-                📄 <strong>File uploaded:</strong> {uploaded_file.name}<br>
-                📦 <strong>Size:</strong> {round(uploaded_file.size / 1024, 2)} KB
-            </div>
-        """, unsafe_allow_html=True)
+        st.success(f"📄 **{uploaded_file.name}** uploaded successfully ({round(uploaded_file.size / 1024, 2)} KB)")
 
     analyse = st.button("🔍 Analyse Report")
 
 with col2:
     st.markdown("### 📊 Severity Guide")
     st.markdown("""
-        <div class="info-card">
-            🔴 <strong>Critical</strong> — Immediate risk to life or safety<br><br>
-            🟠 <strong>Major</strong> — Significant breach requiring urgent action<br><br>
-            🟡 <strong>Minor</strong> — Low risk but must be addressed<br><br>
-            ✅ <strong>Corrective Actions</strong> — Steps to fix each violation<br><br>
-            📊 <strong>Safety Rating</strong> — Overall site assessment
-        </div>
-    """, unsafe_allow_html=True)
+- 🔴 **Critical** — Immediate risk to life or safety
+- 🟠 **Major** — Significant breach requiring urgent action
+- 🟡 **Minor** — Low risk but must be addressed
+- ✅ **Corrective Actions** — Steps to fix each violation
+- 📊 **Safety Rating** — Overall site assessment
+    """)
 
     st.markdown("### 📋 Supported Standards")
     st.markdown("""
-        <div class="info-card">
-            🏗️ <strong>ISO 45001</strong> — Occupational Health & Safety<br><br>
-            🔥 <strong>Fire Safety Codes</strong> — International standards<br><br>
-            ⚠️ <strong>HSE Protocols</strong> — Health & Safety Executive guidelines
-        </div>
-    """, unsafe_allow_html=True)
+- 🏗️ **ISO 45001** — Occupational Health & Safety
+- 🔥 **Fire Safety Codes** — International standards
+- ⚠️ **HSE Protocols** — Health & Safety Executive guidelines
+    """)
 
 # ── System prompt ─────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are a certified Health, Safety and Environment (HSE) compliance expert 
@@ -183,13 +146,13 @@ Your job is to carefully analyse site inspection notes or images and:
 
 Format your response as a clear Safety Alert Summary with sections:
 - 🔴 Critical Violations
-- 🟠 Major Violations  
+- 🟠 Major Violations
 - 🟡 Minor Violations
 - ✅ Corrective Actions
 - 📊 Overall Site Safety Rating
 """
 
-# ── Analysis logic ────────────────────────────────────────────────────────────
+# ── Analysis ──────────────────────────────────────────────────────────────────
 if analyse:
     if not api_key:
         st.error("⚠️ Please enter your Gemini API key in the sidebar.")
@@ -200,7 +163,7 @@ if analyse:
             try:
                 genai.configure(api_key=api_key)
                 model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
+                    model_name="gemini-2.0-flash",
                     system_instruction=SYSTEM_PROMPT
                 )
 
@@ -222,7 +185,6 @@ if analyse:
                     response = model.generate_content(
                         f"Please analyse this site inspection report and flag any safety violations:\n\n{report_text}"
                     )
-                    result = response.text
 
                 else:
                     image = Image.open(uploaded_file)
@@ -230,12 +192,12 @@ if analyse:
                         "Please analyse this site inspection photo and flag any safety violations based on ISO 45001 and fire safety codes.",
                         image
                     ])
-                    result = response.text
 
-                # ── Display result ─────────────────────────────────────────
+                result = response.text
+
                 st.markdown("---")
                 st.markdown("## 📋 Safety Alert Summary")
-                st.markdown(f'<div class="result-box">{result}</div>', unsafe_allow_html=True)
+                st.markdown(result)
 
                 st.download_button(
                     label="📥 Download Safety Alert Summary",
